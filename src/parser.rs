@@ -1,16 +1,15 @@
 use std::fs::File;
-use std::io;
 use std::io::{BufReader, SeekFrom};
 use std::io::prelude::*;
 use std::path::PathBuf;
 
 pub(crate) struct Parser {
-    path: PathBuf,
+    // path: PathBuf,
 }
 
 impl Parser {
     pub(crate) fn parse(path: PathBuf) -> std::io::Result<Parser> {
-        let mut f = File::open(path)?;
+        let f = File::open(path)?;
         let mut reader = BufReader::new(f);
 
         /*
@@ -21,25 +20,25 @@ impl Parser {
         let midi_addr = dbg!(read_n_as_num(&mut reader, 4));
         assert!(string_matches_hex(&mut reader, "564F53303232"));
 
-        let title = dbg!(read_variable_len(&mut reader));
-        let composer = dbg!(read_variable_len(&mut reader));
-        let sequencer = dbg!(read_variable_len(&mut reader));
-        let charter = dbg!(read_variable_len(&mut reader));
-        let genre = dbg!(read_variable_len(&mut reader));
+        let _title = dbg!(read_variable_len(&mut reader));
+        let _composer = dbg!(read_variable_len(&mut reader));
+        let _sequencer = dbg!(read_variable_len(&mut reader));
+        let _charter = dbg!(read_variable_len(&mut reader));
+        let _genre = dbg!(read_variable_len(&mut reader));
 
-        let songtype = dbg!(read_byte(&mut reader));
-        let volume = dbg!(read_byte(&mut reader));
+        let _songtype = dbg!(read_byte(&mut reader));
+        let _volume = dbg!(read_byte(&mut reader));
 
         ignore(&mut reader, 4);
 
         assert!(string_matches_hex(&mut reader, "00"));
-        let speed = dbg!(11 - read_byte(&mut reader));
+        let _speed = dbg!(11 - read_byte(&mut reader));
         assert!(string_matches_hex(&mut reader, "0000"));
 
         ignore(&mut reader, 1);
 
-        let mtime = dbg!(read_n_as_num(&mut reader, 4));
-        let rtime = dbg!(read_n_as_num(&mut reader, 4));
+        let _mtime = dbg!(read_n_as_num(&mut reader, 4));
+        let _rtime = dbg!(read_n_as_num(&mut reader, 4));
 
         ignore(&mut reader, 1024);
 
@@ -56,7 +55,7 @@ impl Parser {
         }
 
         assert!(string_matches_hex(&mut reader, "00"));
-        let level = 1 + read_byte(&mut reader);
+        let _level = 1 + read_byte(&mut reader);
         assert!(string_matches_hex(&mut reader, "0A004D69786564204D6F646500000000"));
 
         /*
@@ -67,14 +66,14 @@ impl Parser {
             let repeat = read_n_as_num(&mut reader, 4);
             assert!(string_matches_hex(&mut reader, "00"));
             for i in 0..repeat {
-                let mtime = read_n_as_num(&mut reader, 4);
-                let pitch = read_byte(&mut reader);
-                let track = read_byte(&mut reader);
-                let volume = read_byte(&mut reader);
-                let played = read_byte(&mut reader) == 1;
+                let _mtime = read_n_as_num(&mut reader, 4);
+                let _pitch = read_byte(&mut reader);
+                let _track = read_byte(&mut reader);
+                let _volume = read_byte(&mut reader);
+                let _played = read_byte(&mut reader) == 1;
                 ignore(&mut reader, 1);
-                let longnote = read_byte(&mut reader);
-                let soundlen = read_n_as_num(&mut reader, 4);
+                let _longnote = read_byte(&mut reader);
+                let _soundlen = read_n_as_num(&mut reader, 4);
                 ignore(&mut reader, 1);
 
                 if i < repeat - 1 {
@@ -92,25 +91,25 @@ impl Parser {
 
         let num_notes = dbg!(read_n_as_num(&mut reader, 4));
         for _ in 0..num_notes {
-            let track = read_byte(&mut reader);
-            let tone = read_n_as_num(&mut reader, 4);
-            let key = read_byte(&mut reader);
+            let _track = read_byte(&mut reader);
+            let _tone = read_n_as_num(&mut reader, 4);
+            let _key = read_byte(&mut reader);
         }
 
         /*
          * MIDI
          */
 
-        reader.seek(SeekFrom::Start(midi_addr as u64));
+        reader.seek(SeekFrom::Start(midi_addr as u64))?;
         ignore(&mut reader, 28);
         assert!(string_matches_hex(&mut reader, "564F534354454D502E6D6964"));
         let midi_len = dbg!(read_n_as_num(&mut reader, 4));
         let mut midi_buffer = vec![0; midi_len];
-        reader.read(&mut midi_buffer);
+        reader.read(&mut midi_buffer)?;
 
         // Should be EOF
 
-        Ok(Parser { path: "".parse().unwrap() })
+        Ok(Parser {})
     }
 }
 
@@ -167,5 +166,5 @@ fn read_byte(file: &mut BufReader<File>) -> usize {
 
 /// Ignore `len` number of bytes.
 fn ignore(file: &mut BufReader<File>, len: usize) {
-    file.seek(SeekFrom::Current(len as i64));
+    file.seek(SeekFrom::Current(len as i64)).expect(&format!("Cannot ignore {} bytes", len));
 }
