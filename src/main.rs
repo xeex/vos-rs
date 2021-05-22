@@ -1,6 +1,6 @@
 mod parser;
 
 fn main() -> std::io::Result<()> {
-    parser::Parser::parse("Aci-L GOD.vow".parse().unwrap())?;
+    parser::Parser::parse("path_to_vos".parse().unwrap())?;
     Ok(())
 }
